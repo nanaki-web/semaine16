@@ -79,11 +79,13 @@ END |
 DELIMITER ;
 
 -- exemple d'insertion
--- INSERT INTO `waz_negocier` (`emp_id`, `in_id`, `an_id`, `neg_est_conclu`, `neg_montant_transaction`, `neg_date_debut_transaction`, `neg_date_transaction_fin`, `neg_date_dernier_contact`)VALUES
+-- INSERT INTO `waz_negocier` (`emp_id`, `in_id`, `an_id`, `neg_est_conclu`, `neg_montant_transaction`,
+--  `neg_date_debut_transaction`, `neg_date_transaction_fin`, `neg_date_dernier_contact`)VALUES
 -- (8, 4, 1, 0, '120.00', '2021-01-27', '2021-03-17', '2021-04-17');
 
-
--- trigger pour la table hist_negocier 
+-- ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+-- trigger pour historisation de  la table waz_negocier ,quand une valeur est effacer , 
+-- elle sera sauvegarder dans la table hist_negocier.
 DELIMITER |
 DROP TRIGGER if EXISTS after_update_negocier |
 CREATE TRIGGER after_update_negocier 
@@ -122,7 +124,6 @@ BEGIN
       'update'
    )
 END|
--- une fois modifier , les anciennes valeurs  entrent dans la table histo_nigocier
 
 CREATE TRIGGER after_delete_negocier 
 AFTER DELETE
@@ -160,8 +161,11 @@ BEGIN
       'DELETE'
    )
 END|
--- une fois effacer ,les anciennes valeurs entrent dans la table histo_negocier
+
 DELIMITER ;
+-- ******************************************************************************************************************
+-- trigger pour apres la modification ou l'insertion pour la table waz_annonce ,si la regex du champ != de la regex ,
+-- alors il aura un message d'erreur .
 
 DELIMITER |
 DROP TRIGGER if EXISTS before_update_annonces |
@@ -170,40 +174,32 @@ BEFORE UPDATE
 ON waz_annonces
 FOR EACH ROW
 BEGIN
-    	IF (new.an_ref REGEXP '/^V{1}E{1}[-]A{1}P{1}[-]([0-9]{4})[-]([0-9]{2})$/gm')= 0 
+    	IF new.an_ref NOT REGEXP '^((V{1}E{1})|(L{1}O{1})|(A{1}C{1}))[-](A{1}P{1}|M{1}A{1}|T{1}E{1}|G{1}A{1}|I{1}M{1}|
+        L{1}P{1}|B{1}U{1})[-]([0-9]{4})[-]([0-9]{2})$'
     THEN
-      SIGNAL SQLSTATE '45000'
-     SET MESSAGE_TEXT = 'Wroooong!!!';
-    END IF;
-        IF (new.an_ref REGEXP '/^V{1}E{1}[-]A{1}P{1}[-]([0-9]{4})[-]([0-9]{2})$/gm')= 1
-        THEN
-        DELETE FROM waz_annonces where an_ref = old.an_ref ;
-        INSERT INTO waz_annonces(an_id,an_prix,an_est_active,an_ref,an_date_disponibilite,
-        an_offre,an_nbre_vues,an_date_ajout,an_date_modif,an_titre,bi_id) VALUES (old.an_id,old.an_prix,
-        old.an_est_active,new.an_ref,old.an_date_disponibilite,old.an_offre,old.an_nbre_vues,old.an_date_ajout,
-        old.an_date_modif,old.an_titre,old.bi_id);
+      SIGNAL SQLSTATE '12345'
+     SET MESSAGE_TEXT = 'Erreur de format!!!';
+   
+     END IF;
+END |
+
+DROP TRIGGER if EXISTS before_insert_annonces |
+CREATE TRIGGER before_insert_annonces
+BEFORE INSERT
+ON waz_annonces
+FOR EACH ROW
+BEGIN
+    	IF new.an_ref NOT REGEXP '^((V{1}E{1})|(L{1}O{1})|(A{1}C{1}))[-](A{1}P{1}|M{1}A{1}|T{1}E{1}|G{1}A{1}|I{1}M{1}|
+        L{1}P{1}|B{1}U{1})[-]([0-9]{4})[-]([0-9]{2})$'
+    THEN
+      SIGNAL SQLSTATE '12345'
+     SET MESSAGE_TEXT = 'Erreur de format!!!';
+   
      END IF;
 END |
 DELIMITER ;
 
-DELIMITER |
-DROP TRIGGER if EXISTS before_update_annonces |
-CREATE TRIGGER before_update_annonces
-BEFORE UPDATE
-ON waz_annonces
-FOR EACH ROW
-BEGIN
-   
-        IF (new.an_ref REGEXP '/^V{1}E{1}[-]A{1}P{1}[-]([0-9]{4})[-]([0-9]{2})$/gm')= 1
-        THEN
-        DELETE FROM waz_annonces where an_ref = old.an_ref ;
-        INSERT INTO waz_annonces(an_id,an_prix,an_est_active,an_ref,an_date_disponibilite,
-        an_offre,an_nbre_vues,an_date_ajout,an_date_modif,an_titre,bi_id) VALUES (old.an_id,old.an_prix,
-        old.an_est_active,new.an_ref,old.an_date_disponibilite,old.an_offre,old.an_nbre_vues,old.an_date_ajout,
-        old.an_date_modif,old.an_titre,old.bi_id);
-     END IF;
-END |
-DELIMITER ;
+
 
 
 
