@@ -9,10 +9,13 @@ USE wazaaImmoGroup;
 CREATE TABLE waz_biens
 (
    bi_id INT(10) NOT NULL AUTO_INCREMENT COMMENT 'Identifiant / Clé primaire',
-   bi_type VARCHAR(25) NOT NULL COMMENT 'Type de bien',
+   bi_type VARCHAR(25) NOT NULL CHECK (bi_type('maison','garage','terrain','locaux_professionnels','immeuble','bureaux',
+   'appartement')) COMMENT 'Type de bien',
    bi_pieces char(4) NOT NULL CHECK (bi_pieces IN ('1','2','3','4','5','6','+6','NULL'))COMMENT 'Nombre de pièces' ,
    -- substring = extraict une partie de la chaine
-   bi_ref CHAR(11) NOT NULL  CHECK (SUBSTRING(bi_ref, 1, 1) <> ' ')   COMMENT 'Référence de l''annonce',
+   bi_ref CHAR(11) NOT NULL  CHECK (REGEXP_LIKE(bi_ref,
+   '^(A{1}P{1}|M{1}A{1}|T{1}E{1}|G{1}A{1}|I{1}M{1}|L{1}P{1}|B{1}U{1})[-]([0-9]{4})
+   [-]([0-9]{2})$')=1)  COMMENT 'Référence du bien',
    bi_description TEXT NOT NULL,
    bi_local VARCHAR(100) NOT NULL,
    bi_surf_habitable INT (11) NOT NULL CHECK (bi_surf_habitable > 0) COMMENT 'Surface habitable (mètres carrés)',
@@ -69,10 +72,9 @@ CREATE TABLE waz_photos
 CREATE TABLE waz_employes
 (
    emp_id INT(10) NOT NULL AUTO_INCREMENT,
-   emp_nom VARCHAR(50) NOT NULL CHECK (COALESCE(SUBSTRING(emp_nom, 1, 1), 'X') 
-      BETWEEN 'A' AND 'Z' AND CHARACTER_LENGTH(emp_nom) > 2),-- accepte a partir de 3 caracteres 
-   -- colaesce -> segmente la chaine caractere 
-   -- substring -> renvoie la première valeur non nulle d'une liste.
+   emp_nom VARCHAR(50) NOT NULL CHECK (REGEXP_LIKE(emp_nom,))
+      
+   
    emp_prenom VARCHAR(50) NOT NULL CHECK (COALESCE(SUBSTRING(emp_prenom, 1, 1), 'X') 
       BETWEEN 'A' AND 'Z'AND CHARACTER_LENGTH(emp_prenom) > 2),
    emp_adresse VARCHAR(50) NOT NULL,
@@ -113,13 +115,14 @@ CREATE TABLE waz_annonces
    an_id INT(10) NOT NULL AUTO_INCREMENT,
    an_prix DECIMAL(8,2) NOT NULL CHECK (an_prix>=0) COMMENT 'Prix en euros',
    an_est_active BOOLEAN NOT NULL CHECK (an_est_active IN ('0','1')) COMMENT '1=active 0=non active',
-   an_ref CHAR(20) NOT NULL COMMENT 'Référence de l''annonce',
-   -- an_ref CHAR(20) NOT NULL CHECK (REGEXP(an_ref,'V{1}E{1}[-]A{1}P{1}[-]([0-9]{4})[-]([0-9]{2})$')=1)  COMMENT 'Référence de l''annonce',
+   an_ref CHAR(20) NOT NULL CHECK (REGEXP_LIKE(an_ref,
+   '^((V{1}E{1})|(L{1}O{1})|(A{1}C{1}))[-](A{1}P{1}|M{1}A{1}|T{1}E{1}|G{1}A{1}|I{1}M{1}|L{1}P{1}|B{1}U{1})[-]([0-9]{4})
+   [-]([0-9]{2})$')=1)  COMMENT 'Référence de l''annonce',
    an_date_disponibilite DATE NOT NULL,
    an_offre CHAR(1) NOT NULL CHECK (an_offre IN ('A','L','V')) COMMENT 'Type d''offre. Lettres A, L ou V.',
    an_nbre_vues SMALLINT(6) NOT NULL CHECK (an_nbre_vues >=0),
    an_date_ajout DATE NOT NULL DEFAULT (CURRENT_DATE),
-   an_date_modif DATETIME  NULL DEFAULT (CURRENT_DATE),
+   an_date_modif DATETIME  DEFAULT NULL ,
    an_titre VARCHAR(255) NOT NULL,
    bi_id INT(10) NOT NULL,
    PRIMARY KEY(an_id),
@@ -177,7 +180,7 @@ CREATE TABLE waz_contacter
 (
    emp_id INT(10),
    in_id INT(10),
-   co_sujet VARCHAR(50) NOT NULL,
+   co_sujet VARCHAR(50) NOT NULL CHECK(co_sujet IN ('acheter','vendre','louer','autres')),
    co_question TEXT NOT NULL,
    PRIMARY KEY(emp_id, in_id),
    FOREIGN KEY(emp_id) REFERENCES waz_employes(emp_id),
