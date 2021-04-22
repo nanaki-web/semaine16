@@ -91,13 +91,13 @@ CREATE TABLE waz_employes
 CREATE TABLE waz_internautes
 (
    in_id INT(10) NOT NULL AUTO_INCREMENT,
-   in_nom VARCHAR(30) NOT NULL CHECK(COALESCE(SUBSTRING(in_nom, 1, 1), 'X') 
-      BETWEEN 'A' AND 'Z' AND CHARACTER_LENGTH(in_nom) > 2 ),
-   in_prenom VARCHAR(30) NOT NULL CHECK(COALESCE(SUBSTRING(in_prenom, 1, 1), 'X') 
-      BETWEEN 'A' AND 'Z' AND CHARACTER_LENGTH(in_prenom) > 2 ),
+   in_nom VARCHAR(30) NOT NULL CHECK 
+   (REGEXP_LIKE(in_nom,'^([^ \W\d_-])([a-zàáâäçèéêëìíîïñòóôöùúûü]+)([-]?)[A-Za-zàáâäçèéêëìíîïñòóôöùúûü]+$')),
+   in_prenom VARCHAR(30) NOT NULL CHECK
+   (REGEXP_LIKE(in_prenom,'^([^ \W\d_-])([a-zàáâäçèéêëìíîïñòóôöùúûü]+)([-]?)[A-Za-zàáâäçèéêëìíîïñòóôöùúûü]+$')),
    in_adresse VARCHAR(50) NOT NULL,
    in_telephone VARCHAR(50) NOT NULL,
-   in_email VARCHAR(50) NOT NULL  ,
+   in_email VARCHAR(50) NOT NULL  CHECK (REGEXP_LIKE(in_email,'([a-z0-9.-])+@([a-z0-9.-]{2,})([.]{1})[a-z]{2,4}$')),
    in_pays VARCHAR(50) NOT NULL,
    in_est_contacter BOOLEAN NOT NULL DEFAULT 0 CHECK (in_est_contacter IN ('0', '1') ) 
    COMMENT '1=contacter 0=non contacter', 
