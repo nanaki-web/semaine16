@@ -72,29 +72,24 @@ CREATE TABLE waz_photos
 CREATE TABLE waz_employes
 (
    emp_id INT(10) NOT NULL AUTO_INCREMENT,
-   emp_nom VARCHAR(50) NOT NULL CHECK (REGEXP_LIKE(emp_nom,))
-      
-   
-   emp_prenom VARCHAR(50) NOT NULL CHECK (COALESCE(SUBSTRING(emp_prenom, 1, 1), 'X') 
-      BETWEEN 'A' AND 'Z'AND CHARACTER_LENGTH(emp_prenom) > 2),
+   emp_nom VARCHAR(50) NOT NULL CHECK (REGEXP_LIKE(emp_nom,'(^[^ \\W\\d_-])([A-Za-zàáâäçèéêëìíîïñòóôöùúûüwW ]+)([ -]?)[A-Za-zàáâäçèéêëìíîïñòóôöùúûü]+$')),
+   emp_prenom VARCHAR(50) NOT NULL CHECK (REGEXP_LIKE(emp_prenom,'(^[^ \W\d_-])([A-Za-zàáâäçèéêëìíîïñòóôöùúûüwW ]+)([ -]?)[A-Za-zàáâäçèéêëìíîïñòóôöùúûü]+$')),
    emp_adresse VARCHAR(50) NOT NULL,
    emp_tel VARCHAR(50) NOT NULL ,
-   emp_mail VARCHAR(50) NOT NULL,
+   emp_mail VARCHAR(50) NOT NULL UNIQUE CHECK (REGEXP_LIKE(emp_mail,'([a-z0-9.-])+@([a-z0-9.-]{2,})([.]{1})[a-z]{2,4}$')),
    emp_poste VARCHAR(50) NOT NULL,
-   emp_mdp VARCHAR(50) NOT NULL,
-   PRIMARY KEY(emp_id),
-   UNIQUE(emp_mail)
+   emp_mdp VARCHAR(50) NOT NULL CHECK(REGEXP_LIKE(emp_mail,'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[-+!*$@%_])([-+!*$@%_\w]{8,15})$')),
+   PRIMARY KEY(emp_id)
 );
-
 -- Structure de la table waz_utilisateurs
 
 CREATE TABLE waz_internautes
 (
    in_id INT(10) NOT NULL AUTO_INCREMENT,
    in_nom VARCHAR(30) NOT NULL CHECK 
-   (REGEXP_LIKE(in_nom,'^([^ \W\d_-])([a-zàáâäçèéêëìíîïñòóôöùúûü]+)([-]?)[A-Za-zàáâäçèéêëìíîïñòóôöùúûü]+$')),
+   (REGEXP_LIKE(in_nom,'(^[^ \\W\\d_-])([A-Za-zàáâäçèéêëìíîïñòóôöùúûü ]+)([ -]?)[A-Za-zàáâäçèéêëìíîïñòóôöùúûü]+$')),
    in_prenom VARCHAR(30) NOT NULL CHECK
-   (REGEXP_LIKE(in_prenom,'^([^ \W\d_-])([a-zàáâäçèéêëìíîïñòóôöùúûü]+)([-]?)[A-Za-zàáâäçèéêëìíîïñòóôöùúûü]+$')),
+   (REGEXP_LIKE(in_prenom,'(^[^ \\W\\d_-])([A-Za-zàáâäçèéêëìíîïñòóôöùúûü ]+)([ -]?)[A-Za-zàáâäçèéêëìíîïñòóôöùúûü]+$')),
    in_adresse VARCHAR(50) NOT NULL,
    in_telephone VARCHAR(50) NOT NULL,
    in_email VARCHAR(50) NOT NULL  CHECK (REGEXP_LIKE(in_email,'([a-z0-9.-])+@([a-z0-9.-]{2,})([.]{1})[a-z]{2,4}$')),
